@@ -9,24 +9,20 @@
 (tset client :api_base (os.getenv :OPENAI_BASE_URL))
 
 (local model "qwen3.5:9b")
-(local chat (client:new_chat_session {: model 
-                                      :tools tools.defs
-                                      :reasoning_effort :none})) ; FIXME: reasoning_effort not working
+(local chat (client:new_chat_session {: model :tools tools.defs}))
 
 (local claudio {})
 
 (fn claudio.request [data]
   (let [response (chat:send data)]
-    (print (fennel.view response))
     (match response
       {: tool_calls} (claudio.handle-tools chat tool_calls)
-      message (print message))))
+      message (print (.. "🐐 " message)))))
 
 (fn claudio.handle-tool [name arguments tool_call_id]
   (let [handler (. tools :handlers name)
         result (handler (cjson.decode arguments))
         content (cjson.encode result)]
-      (print :tool_result (fennel.view result))
       (claudio.request {:role :tool : tool_call_id : content})))
 
 (fn claudio.handle-tools [chat tool_calls]
@@ -35,6 +31,4 @@
       "yes" (claudio.handle-tool name arguments id)
       _ (print "user refused"))))
 
-(while true ; TODO: use for
-  (let [prompt (rl.readline "> ")]
-    (claudio.request prompt)))
+(each [prompt #(rl.readline "> ")] (claudio.request prompt)) ; TODO: history
