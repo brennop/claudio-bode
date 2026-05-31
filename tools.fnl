@@ -19,9 +19,29 @@
                                                          :description "The file path"}}
                                      :required [:path]}}})
 
-(fn handler.read [path]
-  (match (io.open path)
+(fn handlers.read [arguments]
+  (match (io.open arguments.path)
     (nil msg) msg
     file (file:read :*a)))
 
-{:defs [bash path] : handlers}
+(local edit
+       {:type :function
+        :function {:name :edit
+                   :description "Edit file contents"
+                   :parameters {:type :object
+                                :properties {:path {:type :string
+                                                    :description "The file path"}
+                                             :old_text {:type :string
+                                                        :description "Exact text to find"}
+                                             :new_text {:type :string
+                                                        :description "Text replacement"}}
+                                :required [:path :old_text :new_text]}}})
+
+(fn handlers.edit [arguments]
+  (match (io.open arguments.path :w)
+    (nil msg) msg
+    file (let [content (file:read :*a)
+               value   (content:gsub arguments.old_text arguments.new_text]
+               (file:write value)))))
+
+{:defs [bash read] : handlers}

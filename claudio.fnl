@@ -23,17 +23,18 @@
   (chat:append_message data)
   (let [_ (chat:generate_response true {: stream_callback})]
     (match (chat:last_message)
-      {: tool_calls} (claudio.handle-tools chat tool_calls))))
+      {: tool_calls} (claudio.handle-tools tool_calls))))
 
 (fn claudio.handle-tool [name arguments tool_call_id]
   (let [handler (. tools :handlers name)
-        result (handler (cjson.decode arguments))
+        (_ result) (pcall handler (cjson.decode arguments))
         content (cjson.encode result)]
+    (print result)
     (claudio.request {:role :tool : tool_call_id : content})))
 
-(fn claudio.handle-tools [chat tool_calls]
+(fn claudio.handle-tools [tool_calls]
   (each [_ {:function {: name : arguments} : id} (ipairs tool_calls)]
-    (match (rl.readline (.. "\nPode? [" name "] " arguments " (pode) >"))
+    (match (rl.readline (.. "\nPode? [" name "] " arguments " >"))
       "pode" (claudio.handle-tool name arguments id)
       _ (print "não pode")))) ; maybe add to chat messages?
 
