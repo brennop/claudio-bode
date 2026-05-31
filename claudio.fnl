@@ -1,3 +1,5 @@
+#!/usr/bin/env fennel
+
 (local rl (require :readline))
 (local oai (require :openai))
 (local cjson (require :cjson))
@@ -13,9 +15,9 @@
 (local claudio {})
 
 (fn stream_callback [_ {:choices [{:delta {: reasoning : content}}]}]
-    (io.write "\27[2m" (tostring (or reasoning "")))
-    (io.write "\27[0m" (tostring (or content "")))
-    (io.flush))
+  (io.write "\27[2m" (tostring (or reasoning "")))
+  (io.write "\27[0m" (tostring (or content "")))
+  (io.flush))
 
 (fn claudio.request [data]
   (chat:append_message data)
@@ -27,12 +29,15 @@
   (let [handler (. tools :handlers name)
         result (handler (cjson.decode arguments))
         content (cjson.encode result)]
-      (claudio.request {:role :tool : tool_call_id : content})))
+    (claudio.request {:role :tool : tool_call_id : content})))
 
 (fn claudio.handle-tools [chat tool_calls]
   (each [_ {:function {: name : arguments} : id} (ipairs tool_calls)]
     (match (rl.readline (.. "\nPode? [" name "] " arguments " (pode) >"))
       "pode" (claudio.handle-tool name arguments id)
-      _ (print "user refused"))))
+      _ (print "não pode")))) ; maybe add to chat messages?
 
-(each [content #(rl.readline "\n> ")] (claudio.request {:role :user : content})) ; TODO: history
+(each [content #(rl.readline "\n> ")]
+  (claudio.request {:role :user : content}))
+
+(rl.save_history)
