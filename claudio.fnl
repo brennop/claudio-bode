@@ -30,7 +30,7 @@
         (_ result) (pcall handler (cjson.decode arguments))
         content (cjson.encode result)]
     (print result)
-    (claudio.request {:role :tool : tool_call_id : content})))
+    (claudio.request {:role :tool : tool_call_id : content}))) ; TODO: don't request here, just append and request later
 
 (fn claudio.handle-tools [tool_calls]
   (each [_ {:function {: name : arguments} : id} (ipairs tool_calls)]

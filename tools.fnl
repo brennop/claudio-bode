@@ -38,10 +38,10 @@
                                 :required [:path :old_text :new_text]}}})
 
 (fn handlers.edit [arguments]
-  (match (io.open arguments.path :w)
-    (nil msg) msg
-    file (let [content (file:read :*a)
-               value   (content:gsub arguments.old_text arguments.new_text]
-               (file:write value)))))
+  (let [content (with-open [file (io.open arguments.path :r)]
+                  (file:read :*a))
+        value (content:gsub arguments.old_text arguments.new_text)]
+    (with-open [file (io.open arguments.path :w)]
+      (file:write value))))
 
-{:defs [bash read] : handlers}
+{:defs [bash read edit] : handlers}
