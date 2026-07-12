@@ -10,7 +10,7 @@
 (local client (oai.new (os.getenv :OPENAI_API_KEY)))
 (tset client :api_base (os.getenv :OPENAI_BASE_URL))
 
-(local chat (client:new_chat_session {:model "qwen3.5:9b" :tools tools.defs}))
+(local chat (client:new_chat_session {:model "openrouter/free" :tools tools.defs}))
 
 (local claudio {})
 
