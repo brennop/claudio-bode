@@ -7,16 +7,21 @@
 
 (local tools (require :tools))
 
+(local null cjson.null)
+
+(fn nonempty [x]
+  (if (or (= x nil) (= x null)) "" (tostring x)))
+
 (local client (oai.new (os.getenv :OPENAI_API_KEY)))
 (tset client :api_base (os.getenv :OPENAI_BASE_URL))
 
-(local chat (client:new_chat_session {:model "openrouter/free" :tools tools.defs}))
+(local chat (client:new_chat_session {:model "tencent/hy3:free" :tools tools.defs}))
 
 (local claudio {})
 
 (fn stream_callback [_ {:choices [{:delta {: reasoning : content}}]}]
-  (io.write "\27[2m" (tostring (or reasoning "")))
-  (io.write "\27[0m" (tostring (or content "")))
+  (io.write "\27[2m" (nonempty reasoning))
+  (io.write "\27[0m" (nonempty content))
   (io.flush))
 
 (fn claudio.request [data]
